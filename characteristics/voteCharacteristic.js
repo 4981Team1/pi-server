@@ -27,7 +27,7 @@ VoteCharacteristic.prototype.onWriteRequest = function(data, offset, withoutResp
     //package payload vote payload to be posted to server (with user obj)
 
     //return POST status to mobile
-    callback(Characteristic.RESULT_SUCCESS);
+    callback(this.RESULT_SUCCESS);
 };
   
 module.exports = VoteCharacteristic;
