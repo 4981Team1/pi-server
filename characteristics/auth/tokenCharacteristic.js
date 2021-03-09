@@ -31,14 +31,15 @@ TokenCharacteristic.prototype.onWriteRequest = function(data, offset, withoutRes
         //authenticate user and get their elections here
 
         //sends chunked elections payload to mobile client
+        let datastream = "hello world";
         console.log(`TokenCharacteristic - onWriteRequest: notifying`);
         for(let i = 0; i<datastream.length/MTU;i++){
-			let buff = new Buffer(datastream.substr(i*MTU, MTU));
-			console.log('Notifying: '+buff.toString());
-			this._updateValueCallback(buff);
-		}
-		this._updateValueCallback(new Buffer([0x00]));
-        callback(this.RESULT_SUCCESS);
+          let buff = new Buffer(datastream.substr(i*MTU, MTU));
+          console.log('Notifying: '+buff.toString());
+          this._updateValueCallback(buff);
+        }
+        this._updateValueCallback(new Buffer([0x00]));
+            callback(this.RESULT_SUCCESS);
     }else{
         console.log(`TokenCharacteristic - onWriteRequest: notifying, no device to notify.`)
         callback(this.RESULT_UNLIKELY_ERROR);
@@ -48,7 +49,8 @@ TokenCharacteristic.prototype.onWriteRequest = function(data, offset, withoutRes
 TokenCharacteristic.prototype.onSubscribe = function(maxValueSize, updateValueCallback){
 	console.log('TokenCharacteristic - onSubscribe');
 	this._updateValueCallback = updateValueCallback;
-    this._MTU = maxValueSize;
+  this._MTU = maxValueSize;
+  console.log(`TokenCharacteristic - onSubscribe: MTU = ${this._MTU}`);
 };
 
 TokenCharacteristic.prototype.onUnsubscribe = function(){
