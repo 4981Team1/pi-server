@@ -6,7 +6,7 @@ const TokenCharacteristic = require('./characteristics/auth/tokenCharacteristic'
 const VoteCharacteristic = require('./characteristics/voteCharacteristic');
 
 const User = require('./models/user');
-let user = new User();
+let user = new User.User();
 
 console.log('bleno -pi server');
 bleno.on('stateChange', function(state){
