@@ -15,19 +15,25 @@ function VoteCharacteristic(user){
         })
       ]
     });
-    this._vote = new Buffer(0);
+    this._buffer = new Buffer(0);
     this.user = user;
 }
 
 util.inherits(VoteCharacteristic, BlenoCharacteristic);
 
-VoteCharacteristic.prototype.onWriteRequest = function(data, offset, withoutResponse, callback) {
-    this._vote = data;
-    console.log(`VoteCharacteristic - onWriteRequest: value = ${this._vote}`);
+VoteCharacteristic.prototype.onWriteRequest = async function(data, offset, withoutResponse, callback) {
+    this._buffer = data;
+
+    console.log(`VoteCharacteristic - onWriteRequest: value = ${this._buffer}`);
     //package payload vote payload to be posted to server (with user obj)
-    console.log(this.user);
-    //return POST status to mo5bile
-    callback(this.RESULT_SUCCESS);
+    try{
+      let vote = JSON.parse(this._buffer);
+      const res = await axios.post(`https://good-team.herokuapp.com/vote/${this.user.id}/${vote._id}/${vote.selected}`);
+      callback(this.RESULT_SUCCESS);
+    }catch(error){
+      console.log(error)
+      callback(this.RESULT_UNLIKELY_ERROR);
+    }
 };
   
 module.exports = VoteCharacteristic;
