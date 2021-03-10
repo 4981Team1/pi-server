@@ -1,5 +1,5 @@
 const util = require('util');
-
+const axios = require('axios');
 const bleno = require('bleno');
 const BlenoCharacteristic = bleno.Characteristic;
 const BlenoDescriptor = bleno.Descriptor;
@@ -29,6 +29,7 @@ VoteCharacteristic.prototype.onWriteRequest = async function(data, offset, witho
     try{
       let vote = JSON.parse(this._buffer);
       const res = await axios.post(`https://good-team.herokuapp.com/vote/${this.user.id}/${vote._id}/${vote.selected}`);
+      console.log(`VoteCharacteristic - onWriteRequest: POST res = ${res.status}`)
       callback(this.RESULT_SUCCESS);
     }catch(error){
       console.log(error)
