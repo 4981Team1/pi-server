@@ -6,12 +6,11 @@ const BlenoDescriptor = bleno.Descriptor;
 
 const { resolve } = require('path');
 const apiUrl = 'https://good-team.herokuapp.com';
-var user;
 
 const getElectionId = async () => {
 	try {
-		console.log('requesting from\n'  + apiUrl + '/eligible/' + user);
-		return await axios.get(apiUrl+'/eligible/'+user);
+		console.log('requesting from\n'  + apiUrl + '/eligible/' + this.user.id);
+		return await axios.get(apiUrl+'/eligible/'+this.user.id);
 	} catch (error) {
 		console.error(error);
 	}
@@ -47,7 +46,7 @@ util.inherits(TokenCharacteristic, BlenoCharacteristic);
 
 TokenCharacteristic.prototype.onWriteRequest = async function(data, offset, withoutResponse, callback) {
     this._token = data;
-    user = data;
+    this.user.id = data;
     console.log(`TokenCharacteristic - onWriteRequest: value = ${this._token}`);
 
     if(this._updateValueCallback){
