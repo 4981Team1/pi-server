@@ -7,10 +7,10 @@ const BlenoDescriptor = bleno.Descriptor;
 const { resolve } = require('path');
 const apiUrl = 'https://good-team.herokuapp.com';
 
-const getElectionId = async () => {
+const getElectionId = async (user) => {
 	try {
-		console.log('requesting from\n'  + apiUrl + '/eligible/' + this.user.id);
-		return await axios.get(apiUrl+'/eligible/'+this.user.id);
+		console.log('requesting from\n'  + apiUrl + '/eligible/' + user.id);
+		return await axios.get(apiUrl+'/eligible/'+user.id);
 	} catch (error) {
 		console.error(error);
 	}
@@ -54,7 +54,7 @@ TokenCharacteristic.prototype.onWriteRequest = async function(data, offset, with
       //authenticate user and get their elections here
 
       let dataPromise = new Promise(async (resolve, reject) => {
-        let eligibleElectionIds = await getElectionId();
+        let eligibleElectionIds = await getElectionId(this.user);
         eligibleElectionIds = eligibleElectionIds.data.voteless;
         let electionData = [];
         let queryPromise = new Promise(async (resolve, reject) => {
