@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const bleno = require('bleno');
 const BlenoPrimaryService = bleno.PrimaryService;
-const TokenCharacteristic = require('./characteristics/auth/tokenCharacteristic');
+const TokenCharacteristic = require('./characteristics/tokenCharacteristic');
 const VoteCharacteristic = require('./characteristics/voteCharacteristic');
 
 const User = require('./models/user');
