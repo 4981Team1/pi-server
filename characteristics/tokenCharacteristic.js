@@ -18,6 +18,7 @@ function TokenCharacteristic(user){
     this._updateValueCallback = null;
     this._token = new Buffer(0);
     this._MTU = 20;
+    this.user = user;
 }
 
 util.inherits(TokenCharacteristic, BlenoCharacteristic);
@@ -29,7 +30,9 @@ TokenCharacteristic.prototype.onWriteRequest = function(data, offset, withoutRes
     if(this._updateValueCallback){
         let MTU = this._MTU;
         //authenticate user and get their elections here
-
+        console.log(this.user);
+        this.user._MTU = this._MTU;
+        console.log(this.user);
         //sends chunked elections payload to mobile client
         let datastream = "hello world";
         console.log(`TokenCharacteristic - onWriteRequest: notifying`);

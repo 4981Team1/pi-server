@@ -25,8 +25,8 @@ VoteCharacteristic.prototype.onWriteRequest = function(data, offset, withoutResp
     this._vote = data;
     console.log(`VoteCharacteristic - onWriteRequest: value = ${this._vote}`);
     //package payload vote payload to be posted to server (with user obj)
-
-    //return POST status to mobile
+    console.log(this.user);
+    //return POST status to mo5bile
     callback(this.RESULT_SUCCESS);
 };
   
