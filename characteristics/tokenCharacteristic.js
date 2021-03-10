@@ -1,8 +1,30 @@
 const util = require('util');
-
+const axios = require('axios');
 const bleno = require('bleno');
 const BlenoCharacteristic = bleno.Characteristic;
 const BlenoDescriptor = bleno.Descriptor;
+
+const { resolve } = require('path');
+const apiUrl = 'https://good-team.herokuapp.com';
+var user;
+
+const getElectionId = async () => {
+	try {
+		console.log('requesting from\n'  + apiUrl + '/eligible/' + user);
+		return await axios.get(apiUrl+'/eligible/'+user);
+	} catch (error) {
+		console.error(error);
+	}
+}
+
+const getElectionData = async (electionId) => {
+	try {
+		return await axios.get(apiUrl+'/elections/'+electionId);
+	} catch(error) {
+		console.error(error);
+	}
+};
+
 
 function TokenCharacteristic(user){
     TokenCharacteristic.super_.call(this, {
@@ -23,30 +45,46 @@ function TokenCharacteristic(user){
 
 util.inherits(TokenCharacteristic, BlenoCharacteristic);
 
-TokenCharacteristic.prototype.onWriteRequest = function(data, offset, withoutResponse, callback) {
+TokenCharacteristic.prototype.onWriteRequest = async function(data, offset, withoutResponse, callback) {
     this._token = data;
+    user = data;
     console.log(`TokenCharacteristic - onWriteRequest: value = ${this._token}`);
 
     if(this._updateValueCallback){
-        let MTU = this._MTU;
-        //authenticate user and get their elections here
-        console.log(this.user);
-        this.user._MTU = this._MTU;
-        console.log(this.user);
-        //sends chunked elections payload to mobile client
-        let datastream = "hello world";
+      let MTU = this._MTU;
+      //authenticate user and get their elections here
+
+      let dataPromise = new Promise(async (resolve, reject) => {
+        let eligibleElectionIds = await getElectionId();
+        eligibleElectionIds = eligibleElectionIds.data.voteless;
+        let electionData = [];
+        let queryPromise = new Promise(async (resolve, reject) => {
+          for(const eligibleId of eligibleElectionIds) {
+            const result = await getElectionData(eligibleId);
+            electionData.push(result.data);
+          }
+        resolve();
+        });
+        queryPromise.then(() => {
+          resolve(electionData);
+        });
+      });
+      dataPromise.then((datastream) => {
         console.log(`TokenCharacteristic - onWriteRequest: notifying`);
+        datastream = JSON.stringify(datastream);
+        //sends chunked elections payload to mobile client
         for(let i = 0; i<datastream.length/MTU;i++){
           let buff = new Buffer(datastream.substr(i*MTU, MTU));
           console.log('Notifying: '+buff.toString());
           this._updateValueCallback(buff);
         }
         this._updateValueCallback(new Buffer([0x00]));
-            callback(this.RESULT_SUCCESS);
-    }else{
-        console.log(`TokenCharacteristic - onWriteRequest: notifying, no device to notify.`)
-        callback(this.RESULT_UNLIKELY_ERROR);
-    }
+        callback(this.RESULT_SUCCESS);  
+      });
+  }else{
+    console.log(`TokenCharacteristic - onWriteRequest: notifying, no device to notify.`)
+    callback(this.RESULT_UNLIKELY_ERROR);
+  }
 };
 
 TokenCharacteristic.prototype.onSubscribe = function(maxValueSize, updateValueCallback){
