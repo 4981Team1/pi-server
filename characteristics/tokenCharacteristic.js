@@ -7,16 +7,6 @@ const BlenoDescriptor = bleno.Descriptor;
 const { resolve } = require('path');
 const apiUrl = 'https://good-team.herokuapp.com';
 
-
-const getElectionId = async (user) => {
-	try {
-		console.log('requesting from\n'  + apiUrl + '/eligible/' + user.id);
-		return await axios.get(apiUrl+'/eligible/'+user.id);
-	} catch (error) {
-		console.error(error);
-	}
-}
-
 const getElectionData = async (electionId, token) => {
 	try {
 		return await axios.get(apiUrl+'/elections/'+electionId, {headers: {
