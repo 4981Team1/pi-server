@@ -3,6 +3,7 @@ const axios = require('axios');
 const bleno = require('bleno');
 const BlenoCharacteristic = bleno.Characteristic;
 const BlenoDescriptor = bleno.Descriptor;
+const apiUrl = 'https://good-team.herokuapp.com';
 
 function VoteCharacteristic(user){
     VoteCharacteristic.super_.call(this, {
@@ -28,9 +29,27 @@ VoteCharacteristic.prototype.onWriteRequest = async function(data, offset, witho
     //package payload vote payload to be posted to server (with user obj)
     try{
       let vote = JSON.parse(this._buffer);
-      const res = await axios.post(`https://good-team.herokuapp.com/vote/${this.user.id}/${vote._id}/${vote.selected}`);
-      console.log(`VoteCharacteristic - onWriteRequest: POST res = ${res.status}`)
-      callback(this.RESULT_SUCCESS);
+      let jsonObj = {
+        "voter_id": this.user.id,
+        "election_id": vote._id, 
+        "choice" : vote.choice
+      }; 
+      console.log(jsonObj);
+      const adminPromise = new Promise(async (resolve, reject) => {
+        let tokenResponse = await axios.post(apiUrl + '/login', {email: "light", password:"light"})
+        console.log(tokenResponse);
+        if(!tokenResponse) {
+          reject();
+        }
+        resolve(tokenResponse);
+      });
+      adminPromise.then(async (tokenResponse) => {
+        const res = await axios.post(apiUrl + '/ballots', JSON.stringify(jsonObj), {headers: {
+          "voter-token": tokenResponse.data.token
+        }});
+        console.log(`VoteCharacteristic - onWriteRequest: POST res = ${res.status}`)
+        callback(this.RESULT_SUCCESS);  
+      });
     }catch(error){
       console.log(error)
       callback(this.RESULT_UNLIKELY_ERROR);

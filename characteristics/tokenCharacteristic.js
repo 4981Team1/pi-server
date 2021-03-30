@@ -7,6 +7,7 @@ const BlenoDescriptor = bleno.Descriptor;
 const { resolve } = require('path');
 const apiUrl = 'https://good-team.herokuapp.com';
 
+
 const getElectionData = async (electionId, token) => {
 	try {
 		return await axios.get(apiUrl+'/elections/'+electionId, {headers: {
@@ -48,9 +49,7 @@ util.inherits(TokenCharacteristic, BlenoCharacteristic);
 
 TokenCharacteristic.prototype.onWriteRequest = async function(data, offset, withoutResponse, callback) {
   data = JSON.parse(data);
-  console.log(data.email);
-  console.log(data.password);
-
+  this.user.email = data.email;
   
   let tokenPromise = new Promise(async (resolve, reject) => {
     console.log("within token promise");
@@ -63,7 +62,7 @@ TokenCharacteristic.prototype.onWriteRequest = async function(data, offset, with
   tokenPromise.then(
     async (datastream) => {
       console.log("inside tokenpromise: " + datastream.data.token);
-      this._token = datastream.data.token;
+      this.user.token = datastream.data.token;
       this.user.id = datastream.data._id;
       if(this._updateValueCallback){
         let MTU = this._MTU;
@@ -72,13 +71,13 @@ TokenCharacteristic.prototype.onWriteRequest = async function(data, offset, with
         let dataPromise = new Promise(async (resolve, reject) => {
           console.log("from update callback promise: " + this._token);
           let eligibleData = await axios.get(apiUrl + "/voters/elections", {headers: {
-            "voter-token": this._token
+            "voter-token": this.user.token
           }});
           let eligibleElectionIds = eligibleData.data.votable;
           let electionData = [];
           let queryPromise = new Promise(async (resolve, reject) => {
             for(const eligibleId of eligibleElectionIds) {
-              const result = await getElectionData(eligibleId, this._token);
+              const result = await getElectionData(eligibleId, this.user.token);
   
               electionData.push(result.data.election);
             }
